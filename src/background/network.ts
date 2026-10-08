@@ -17,12 +17,17 @@ export function buildAllowlistRules(hosts: readonly string[]): Rule[] {
 }
 
 export async function applyDynamicRules(settings: Settings): Promise<void> {
-  const addRules = [...buildAllowlistRules(settings.allowlist), ...convertCustomRules(settings.customRules).network];
+  const allowlist = buildAllowlistRules(settings.allowlist);
+  const custom = convertCustomRules(settings.customRules).network;
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: existing.map((rule) => rule.id),
-    addRules,
-  });
+  const removeRuleIds = existing.map((rule) => rule.id);
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: [...allowlist, ...custom] });
+  } catch (error) {
+    // Chrome validates the whole batch; keep the allowlist working even if a custom rule is rejected.
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: allowlist });
+    throw error;
+  }
 }
 
 export async function applyEnabledLists(enabled: readonly number[]): Promise<void> {

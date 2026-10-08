@@ -1,3 +1,4 @@
+import { withoutHost } from '../../shared/hosts';
 import { send } from '../../shared/messages';
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -24,10 +25,14 @@ async function main(): Promise<void> {
 
   enabled.addEventListener('change', async () => {
     const { allowlist } = await send({ type: 'getSettings' });
-    await send({
+    const result = await send({
       type: 'updateSettings',
-      patch: { allowlist: enabled.checked ? allowlist.filter((h) => h !== host) : [...allowlist, host] },
+      patch: { allowlist: enabled.checked ? withoutHost(allowlist, host) : [...allowlist, host] },
     });
+    if (result.error) {
+      $('error').textContent = result.error;
+      return;
+    }
     await chrome.tabs.reload(tab.id as number);
   });
 

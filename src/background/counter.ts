@@ -1,4 +1,10 @@
+import { CUSTOM_RULE_ID_BASE } from '../shared/custom-rules';
+
 const key = (tabId: number): string => `count:${tabId}`;
+
+export function isCountableMatch(rule: { ruleId: number; rulesetId: string }): boolean {
+  return !(rule.rulesetId === '_dynamic' && rule.ruleId < CUSTOM_RULE_ID_BASE);
+}
 
 let queue: Promise<unknown> = Promise.resolve();
 

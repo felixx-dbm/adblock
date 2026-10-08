@@ -12,7 +12,9 @@ export async function refreshCosmeticLists(settings: Settings): Promise<boolean>
     try {
       const response = await fetch(FILTER_URL(id));
       if (!response.ok) continue;
-      overrides[id] = extractCosmeticLines(await response.text());
+      const cosmetic = extractCosmeticLines(await response.text());
+      if (cosmetic === '') continue;
+      overrides[id] = cosmetic;
       changed = true;
     } catch {
       // offline or blocked: keep the cached copy for this list
@@ -21,4 +23,8 @@ export async function refreshCosmeticLists(settings: Settings): Promise<boolean>
 
   if (changed) await chrome.storage.local.set({ [OVERRIDES_KEY]: overrides });
   return changed;
+}
+
+export async function resetOverrides(): Promise<void> {
+  await chrome.storage.local.remove(OVERRIDES_KEY);
 }

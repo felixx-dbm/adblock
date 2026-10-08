@@ -6,7 +6,7 @@ const MAX_CLASS_LENGTH = 30;
 const escapeIdent = (value: string): string => value.replace(/[^\w-]/g, '\\$&');
 
 function segment(element: Element): string {
-  const tag = element.tagName.toLowerCase();
+  const tag = element.localName;
   const classes = [...element.classList]
     .filter((name) => SAFE_IDENT.test(name) && name.length <= MAX_CLASS_LENGTH && !/\d{3,}/.test(name))
     .map((name) => `.${escapeIdent(name)}`)
@@ -37,7 +37,12 @@ export function generateSelector(element: Element): string {
     if (isUnique(selector)) return selector;
     node = node.parentElement;
   }
-  return parts.join(' > ');
+  return parts.length > 0 ? parts.join(' > ') : element.localName;
+}
+
+export function isPickable(element: Element): boolean {
+  const doc = element.ownerDocument;
+  return element !== doc.documentElement && element !== doc.body;
 }
 
 function confirmHide(selector: string): void {
@@ -102,7 +107,7 @@ export function startPicker(): void {
   const onClick = (event: MouseEvent): void => {
     event.preventDefault();
     event.stopPropagation();
-    if (!target) return;
+    if (!target || !isPickable(target)) return;
     const selector = generateSelector(target);
     stop();
     confirmHide(selector);

@@ -52,6 +52,7 @@ async function main(): Promise<void> {
       type: 'updateSettings',
       patch: { enabledLists, allowlist, customRules: $<HTMLTextAreaElement>('custom-rules').value },
     });
+    $<HTMLTextAreaElement>('allowlist').value = result.settings.allowlist.join('\n');
     $('status').textContent = result.error ?? 'Saved';
   });
 }

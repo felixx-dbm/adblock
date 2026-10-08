@@ -1,9 +1,9 @@
 import { getSettings } from '../shared/settings';
 import type { Message } from '../shared/messages';
-import { addCount, resetCount } from './counter';
+import { addCount, isCountableMatch, resetCount } from './counter';
 import { reload } from './engine';
 import { handleMessage, syncAll } from './handlers';
-import { refreshCosmeticLists } from './lists';
+import { refreshCosmeticLists, resetOverrides } from './lists';
 import { injectScriptlets } from './navigation';
 
 const REFRESH_ALARM = 'refresh-lists';
@@ -16,6 +16,7 @@ async function ensureRefreshAlarm(): Promise<void> {
 
 chrome.runtime.onInstalled.addListener(async () => {
   await chrome.action.setBadgeBackgroundColor({ color: '#4a4a4a' });
+  await resetOverrides();
   await syncAll();
   await ensureRefreshAlarm();
 });
@@ -38,7 +39,7 @@ chrome.webNavigation.onCommitted.addListener((details) => {
 });
 
 chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
-  if (info.request.tabId >= 0) void addCount(info.request.tabId);
+  if (info.request.tabId >= 0 && isCountableMatch(info.rule)) void addCount(info.request.tabId);
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -46,6 +47,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
-  void handleMessage(message, sender).then(sendResponse);
+  handleMessage(message, sender).then(sendResponse, () => sendResponse(null));
   return true;
 });

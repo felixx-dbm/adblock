@@ -29,3 +29,25 @@ it('copes with ids and classes that need escaping', () => {
     '[id="1ad"] p',
   );
 });
+
+import { isPickable } from '../../src/content/picker';
+
+it('never produces an empty selector', () => {
+  document.body.innerHTML = '';
+  expect(generateSelector(document.documentElement)).toBe('html');
+});
+
+it('refuses to pick html or body', () => {
+  document.body.innerHTML = '<div></div>';
+  expect(isPickable(document.documentElement)).toBe(false);
+  expect(isPickable(document.body)).toBe(false);
+  expect(isPickable(document.querySelector('div') as Element)).toBe(true);
+});
+
+it('keeps the case of svg element names', () => {
+  document.body.innerHTML = '<svg><clipPath></clipPath><clipPath></clipPath></svg>';
+  const second = document.querySelectorAll('clipPath')[1] as Element;
+  const selector = generateSelector(second);
+  expect(document.querySelectorAll(selector)).toHaveLength(1);
+  expect(document.querySelector(selector)).toBe(second);
+});
