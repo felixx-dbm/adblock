@@ -1,3 +1,27 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Adblock settings</title></head>
-<body><script src="options.js"></script></body></html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Adblock settings</title>
+  <style>
+    body { font: 14px system-ui; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+    h2 { margin-top: 28px; }
+    label { display: block; margin: 4px 0; }
+    textarea { width: 100%; height: 140px; font: 13px ui-monospace, monospace; }
+    #rule-errors { color: #b00020; margin: 6px 0; padding-left: 18px; }
+    small { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Adblock</h1>
+  <h2>Filter lists</h2>
+  <div id="lists"></div>
+  <h2>Custom rules</h2>
+  <textarea id="custom-rules" spellcheck="false"></textarea>
+  <ul id="rule-errors"></ul>
+  <h2>Disabled sites</h2>
+  <textarea id="allowlist" spellcheck="false" placeholder="one hostname per line"></textarea>
+  <p><button id="save">Save</button> <span id="status"></span></p>
+  <script src="options.js"></script>
+</body>
+</html>
