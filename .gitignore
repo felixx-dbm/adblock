@@ -3,3 +3,8 @@ dist/
 .DS_Store
 *.log
 .env
+rulesets/
+cosmetic/
+test-results/
+playwright-report/
+.superpowers/
