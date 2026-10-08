@@ -1,12 +1,14 @@
 import { CosmeticEngine } from '../engine/cosmetic';
 import { getSettings } from '../shared/settings';
+import { latestWins } from './latest';
 import { loadSources } from './sources';
 
 export const engine = new CosmeticEngine();
 
-async function load(): Promise<void> {
-  engine.load(await loadSources(await getSettings()));
-}
+const load = latestWins(
+  async () => loadSources(await getSettings()),
+  (sources) => engine.load(sources),
+);
 
 let loading = load();
 
