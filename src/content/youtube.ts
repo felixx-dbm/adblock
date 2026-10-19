@@ -1,7 +1,11 @@
 const SKIP_BUTTONS = '.ytp-skip-ad-button, .ytp-ad-skip-button, .ytp-ad-skip-button-modern';
-const POLL_MS = 500;
+const POLL_MS = 250;
+// Seeking exactly to `duration` before the ad is buffered strands YouTube's MSE player
+// (readyState 1, never fires `ended`), so the real video never loads. Stop just short instead.
+const END_MARGIN_S = 0.1;
 
 let mutedBeforeAd: boolean | null = null;
+let seekedSrc: string | null = null;
 
 export function handleYoutubeAd(doc: Document): boolean {
   const player = doc.querySelector('.html5-video-player');
@@ -13,19 +17,21 @@ export function handleYoutubeAd(doc: Document): boolean {
       video.playbackRate = 1;
       mutedBeforeAd = null;
     }
+    seekedSrc = null;
     return false;
   }
 
-  const skip = doc.querySelector<HTMLElement>(SKIP_BUTTONS);
-  if (skip) {
-    skip.click();
-    return true;
-  }
+  // YouTube ignores untrusted clicks and keeps the button hidden for ~5s, so never rely on it alone.
+  doc.querySelector<HTMLElement>(SKIP_BUTTONS)?.click();
 
   mutedBeforeAd ??= video.muted;
   video.muted = true;
   video.playbackRate = 16;
-  if (Number.isFinite(video.duration)) video.currentTime = video.duration;
+  // Each ad in a pod gets its own src; seek each one once, after it has data to play.
+  if (video.src !== seekedSrc && Number.isFinite(video.duration) && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+    video.currentTime = Math.max(0, video.duration - END_MARGIN_S);
+    seekedSrc = video.src;
+  }
   return true;
 }
 
