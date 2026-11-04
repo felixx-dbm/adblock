@@ -1,6 +1,9 @@
 import { build } from 'esbuild';
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { buildManifest } from './scripts/manifest';
+import { CosmeticEngine } from './src/engine/cosmetic';
+import { bundleScriptlets } from './src/engine/scriptlet-bundle';
+import { MAIN_WORLD_HOSTS, mainWorldFile } from './src/shared/main-world';
 import type { ListMeta } from './src/shared/lists';
 
 await rm('dist', { recursive: true, force: true });
@@ -29,5 +32,21 @@ await writeFile('dist/manifest.json', JSON.stringify(buildManifest(base, meta.ma
 
 await cp('rulesets', 'dist/rulesets', { recursive: true });
 await cp('cosmetic', 'dist/cosmetic', { recursive: true });
+const cosmeticFiles = (await readdir('cosmetic')).filter((name) => /^filter_\d+\.txt$/.test(name));
+const scriptletEngine = new CosmeticEngine();
+scriptletEngine.load(
+  await Promise.all(
+    cosmeticFiles.map(async (name) => ({
+      id: Number(name.match(/\d+/)?.[0]),
+      content: await readFile(`cosmetic/${name}`, 'utf8'),
+    })),
+  ),
+);
+await mkdir('dist/scriptlets', { recursive: true });
+for (const host of MAIN_WORLD_HOSTS) {
+  const { scriptlets } = scriptletEngine.getPayload(`https://${host}/`);
+  await writeFile(`dist/${mainWorldFile(host)}`, bundleScriptlets(scriptlets));
+}
+
 await cp('src/ui/popup/popup.html', 'dist/popup.html');
 await cp('src/ui/options/options.html', 'dist/options.html');

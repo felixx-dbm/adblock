@@ -3,12 +3,18 @@ import type { CosmeticResponse, Message, ResponseMap, TabState, UpdateResult } f
 import { getSettings, updateSettings, type Settings } from '../shared/settings';
 import { addCount, getCount } from './counter';
 import { engine, reload, whenReady } from './engine';
+import { registerMainWorldScripts } from './navigation';
 import { applyDynamicRules, applyEnabledLists } from './network';
 
 export async function syncAll(): Promise<void> {
   const settings = await getSettings();
   const failures: string[] = [];
-  const steps = [reload, () => applyEnabledLists(settings.enabledLists), () => applyDynamicRules(settings)];
+  const steps = [
+    reload,
+    () => applyEnabledLists(settings.enabledLists),
+    () => applyDynamicRules(settings),
+    () => registerMainWorldScripts(settings.allowlist),
+  ];
   for (const step of steps) {
     try {
       await step();
