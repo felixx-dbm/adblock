@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Adblock",
   "version": "0.1.0",
-  "description": "Personal ad and tracker blocker",
+  "description": "Ad and tracker blocker for Manifest V3, built on AdGuard filters",
   "minimum_chrome_version": "120",
   "permissions": [
     "declarativeNetRequest",

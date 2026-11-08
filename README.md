@@ -1,5 +1,7 @@
 # adblock
 
+[![CI](https://github.com/felixx-dbm/adblock/actions/workflows/ci.yml/badge.svg)](https://github.com/felixx-dbm/adblock/actions/workflows/ci.yml)
+
 A Manifest V3 Chrome extension that blocks ads and trackers as thoroughly as MV3 allows, built on AdGuard's open-source filter engine.
 
 ## Why
@@ -33,7 +35,15 @@ esbuild -> dist/                     - static rulesets on/off
 
 Design notes and trade-offs: [`docs/superpowers/specs`](docs/superpowers/specs/2026-10-08-adblock-extension-design.md).
 
-## Build and install
+![Options page with AdGuard filter lists, custom rules and allowlist](docs/images/options.png)
+
+## Install
+
+Download `adblock-vX.Y.Z.zip` from the [latest release](https://github.com/felixx-dbm/adblock/releases/latest) and unzip it. Open `chrome://extensions`, enable Developer mode, click "Load unpacked" and select the unzipped folder.
+
+Each release is built by CI with the filter lists current at that time.
+
+## Build from source
 
 ```bash
 npm install
