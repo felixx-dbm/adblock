@@ -7,6 +7,7 @@ const lines = [
   'example.org#?#div:has(> .x)',
   'example.org#$#.promo { height: 0 !important }',
   "example.org#%#//scriptlet('set-constant', 'adsEnabled', 'false')",
+  'example.org#%#(()=>{window.rawRule=1})();',
   'other.org#@#.generic-ad',
 ].join('\n');
 
@@ -52,6 +53,11 @@ describe('CosmeticEngine', () => {
     expect(typeof scriptlets[0]?.func).toBe('function');
   });
 
+  it('returns raw JS rules separately from scriptlets', () => {
+    expect(engine.getPayload('https://example.org/').scripts).toEqual(['(()=>{window.rawRule=1})();']);
+    expect(engine.getPayload('https://unrelated.com/').scripts).toEqual([]);
+  });
+
   it('disables cosmetics on a document-level $elemhide exception', () => {
     engine.load([{ id: 1, content: '##.generic-ad\n@@||example.org^$elemhide' }]);
     expect(engine.getPayload('https://example.org/').css).toEqual([]);
@@ -63,6 +69,7 @@ describe('CosmeticEngine', () => {
       extCss: [],
       countSelector: null,
       scriptlets: [],
+      scripts: [],
     });
   });
 });

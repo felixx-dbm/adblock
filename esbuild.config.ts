@@ -44,8 +44,8 @@ scriptletEngine.load(
 );
 await mkdir('dist/scriptlets', { recursive: true });
 for (const host of MAIN_WORLD_HOSTS) {
-  const { scriptlets } = scriptletEngine.getPayload(`https://${host}/`);
-  await writeFile(`dist/${mainWorldFile(host)}`, bundleScriptlets(scriptlets));
+  const { scriptlets, scripts } = scriptletEngine.getPayload(`https://${host}/`);
+  await writeFile(`dist/${mainWorldFile(host)}`, bundleScriptlets(scriptlets, scripts));
 }
 
 await cp('src/ui/popup/popup.html', 'dist/popup.html');

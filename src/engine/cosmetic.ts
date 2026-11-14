@@ -20,6 +20,8 @@ export interface CosmeticPayload {
   extCss: string[];
   countSelector: string | null;
   scriptlets: ScriptletData[];
+  // Raw JS rules (`#%#(()=>{...})()`). MV3 only allows running these from files shipped with the extension.
+  scripts: string[];
 }
 
 const MAX_COUNTED_SELECTORS = 200;
@@ -35,7 +37,7 @@ export class CosmeticEngine {
   }
 
   getPayload(url: string): CosmeticPayload {
-    if (!this.engine) return { css: [], extCss: [], countSelector: null, scriptlets: [] };
+    if (!this.engine) return { css: [], extCss: [], countSelector: null, scriptlets: [], scripts: [] };
 
     const request = new Request(url, null, RequestType.Document);
     const option = this.engine.matchRequest(request).getCosmeticOption();
@@ -43,10 +45,11 @@ export class CosmeticEngine {
     const { elementHiding, CSS } = result;
 
     const countSelector = elementHiding.specific.slice(0, MAX_COUNTED_SELECTORS).map(raw).join(', ');
-    const scriptlets = result
-      .getScriptRules()
+    const scriptRules = result.getScriptRules();
+    const scriptlets = scriptRules
       .map((rule) => rule.getScriptletData())
       .filter((data): data is ScriptletData => data !== null);
+    const scripts = scriptRules.filter((rule) => rule.getScriptletData() === null).map(raw);
 
     return {
       css: [...elementHiding.generic, ...elementHiding.specific].map(hide).concat(
@@ -57,6 +60,7 @@ export class CosmeticEngine {
       ),
       countSelector: countSelector === '' ? null : countSelector,
       scriptlets,
+      scripts,
     };
   }
 }
